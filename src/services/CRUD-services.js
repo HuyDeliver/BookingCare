@@ -1,5 +1,7 @@
+import { raw } from 'body-parser';
 import db from '../models/index.js';
 import Bcrypt from 'bcrypt';
+import { where } from 'sequelize';
 
 const salt = Bcrypt.genSaltSync(10);
 
@@ -36,6 +38,72 @@ const hashPassword = (password) => {
     }
 };
 
+const getAllUser = async () => {
+    try {
+        let users = await db.User.findAll({
+            raw: true,
+        })
+        return users
+    } catch (error) {
+        console.error("Error in creating user:", error);
+        throw error; // Ném lỗi ra ngoài để có thể xử lý ở nơi gọi
+    }
+}
+
+const getOneUser = async (data) => {
+    try {
+
+        let getUser = await db.User.findOne({
+            where: { id: data },
+            raw: true
+        })
+        return getUser
+
+    } catch (error) {
+        console.error("Error in creating user:", error);
+        throw error; // Ném lỗi ra ngoài để có thể xử lý ở nơi gọi
+    }
+}
+
+const updateUser = async (data) => {
+    try {
+        let postUpdate = await db.User.update(
+            {
+                email: data.email,
+                password: data.password,
+                firstName: data.firstname,
+                lastName: data.lastname,
+                address: data.address,
+                gender: data.gender == 1 ? true : false,
+                roleID: data.roleID,
+                phoneNumber: data.phonenumber,
+            },
+            {
+                where: { id: data.id }
+            }
+        )
+        return postUpdate
+    } catch (error) {
+        console.error("Error in creating user:", error);
+        throw error; // Ném lỗi ra ngoài để có thể xử lý ở nơi gọi
+    }
+}
+
+const deleteUser = async (data) => {
+    try {
+        let postDelete = await db.User.destroy({
+            where: { id: data }
+        })
+        return postDelete
+    } catch (error) {
+        console.error("Error in creating user:", error);
+        throw error; // Ném lỗi ra ngoài để có thể xử lý ở nơi gọi
+    }
+}
 module.exports = {
-    createNewUser
+    createNewUser,
+    getAllUser,
+    getOneUser,
+    updateUser,
+    deleteUser
 };

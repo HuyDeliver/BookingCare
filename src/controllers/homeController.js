@@ -1,5 +1,5 @@
 import db from "../models/index.js"
-import CRUDService from "../services/CRUD-services.js"
+import { createNewUser, getAllUser, getOneUser, updateUser, deleteUser } from "../services/CRUD-services.js"
 const getHomePage = async (req, res) => {
     try {
         let data = await db.User.findAll()
@@ -12,15 +12,42 @@ const getHomePage = async (req, res) => {
 const getCRUDPage = async (req, res) => {
     return res.render('crud.ejs')
 }
-
 const PostCRUDPage = async (req, res) => {
-    let message = await CRUDService.createNewUser(req.body)
-    console.log(message)
-    return res.send('đăng kí thành công')
+    await createNewUser(req.body)
+    return res.redirect('/getCRUD')
+}
+
+const displayCRUDPage = async (req, res) => {
+    let getUser = await getAllUser()
+    return res.render('displayCRUD.ejs', { data: getUser })
+}
+
+const getUpdatePage = async (req, res) => {
+    let User = req.params.id
+    if (User) {
+        let updateUser = await getOneUser(User)
+        return res.render('updateUser.ejs', { data: updateUser })
+    } else {
+        return res.send('cannot find user')
+    }
+}
+
+const postUpdatePage = async (req, res) => {
+    await updateUser(req.body)
+    res.redirect('/getCRUD')
+}
+
+const getDeletePage = async (req, res) => {
+    await deleteUser(req.params.id)
+    res.redirect('/getCRUD')
 }
 
 module.exports = {
     getHomePage,
     getCRUDPage,
-    PostCRUDPage
+    PostCRUDPage,
+    displayCRUDPage,
+    getUpdatePage,
+    postUpdatePage,
+    getDeletePage
 }
