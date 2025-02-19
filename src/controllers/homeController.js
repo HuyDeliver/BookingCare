@@ -1,4 +1,5 @@
-import db from "../models"
+import db from "../models/index.js"
+import CRUDService from "../services/CRUD-services.js"
 const getHomePage = async (req, res) => {
     try {
         let data = await db.User.findAll()
@@ -8,6 +9,18 @@ const getHomePage = async (req, res) => {
     }
 }
 
+const getCRUDPage = async (req, res) => {
+    return res.render('crud.ejs')
+}
+
+const PostCRUDPage = async (req, res) => {
+    let message = await CRUDService.createNewUser(req.body)
+    console.log(message)
+    return res.send('đăng kí thành công')
+}
+
 module.exports = {
-    getHomePage
+    getHomePage,
+    getCRUDPage,
+    PostCRUDPage
 }
