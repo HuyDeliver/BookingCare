@@ -43,8 +43,6 @@ const handleUserLogin = async (email, password) => {
         }
     } catch (error) {
         console.log("Error in handleUserLogin:", error);
-        userData.errorCode = 500; // Mã lỗi server
-        userData.errorMessage = "Internal server error";
     }
 
     return userData; // Luôn trả về userData, kể cả khi có lỗi
@@ -62,7 +60,32 @@ const checkUserEmail = async (userEmail) => {
     }
 };
 
+const getAllUserService = async (id) => {
+    try {
+        let user = ''
+        if (id === 'All') {
+            user = await db.User.findAll({
+                attributes: {
+                    exclude: ['password']
+                },
+            })
+        }
+        if (id && id != 'All') {
+            user = await db.User.findOne({
+                attributes: {
+                    exclude: ['password']
+                },
+                where: { id: id },
+            })
+        }
+        return user
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     handleUserLogin,
     checkUserEmail,
+    getAllUserService
 };
