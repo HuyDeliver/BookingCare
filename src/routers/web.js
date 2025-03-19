@@ -25,6 +25,12 @@ router.post('/api/login', userController.handleLogin)
 
 router.get('/api/get-all-users', userController.handleGetAllUsers)
 
+router.post('/api/create-new-users', userController.handleCreateNewUser)
+
+router.put('/api/update-user', userController.handleUpdateUser)
+
+router.delete('/api/delete-user', userController.handleDeleteUser)
+
 module.exports = router
 
 

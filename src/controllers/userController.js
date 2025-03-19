@@ -32,7 +32,34 @@ module.exports = {
             errMessage: 'OK',
             user
         })
+    },
+    handleCreateNewUser: async (req, res) => {
+        let message = await userServices.createNewUser(req.body)
+        console.log(">>check message", message)
+        return res.status(200).json(message)
+    },
+    handleEditUser: async (req, res) => {
 
-
+    },
+    handleDeleteUser: async (req, res) => {
+        if (!req.body.id) {
+            return res.status(200).json({
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            })
+        }
+        let message = await userServices.DeleteUser(req.body.id)
+        return res.status(200).json(message)
+    },
+    handleUpdateUser: async (req, res) => {
+        let data = req.body
+        if (!data.id) {
+            return res.status(200).json({
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            })
+        }
+        let message = await userServices.UpdateUser(data)
+        return res.status(200).json(message)
     }
 }
