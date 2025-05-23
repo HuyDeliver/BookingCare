@@ -13,8 +13,8 @@ app.use(cors({ credentials: true, origin: true }));
 
 //config app
 
-app.use(express.json()); // Used to parse JSON bodies
-app.use(express.urlencoded({ extended: true })); //Parse URL-encoded bodies
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 configViewEngine(app)
 app.use(router)

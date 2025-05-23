@@ -11,7 +11,7 @@ const handleUserLogin = async (email, password) => {
         let isExist = await checkUserEmail(email);
         if (isExist) {
             let user = await db.User.findOne({
-                attributes: ['email', 'roleID', 'password'],
+                attributes: ['email', 'roleID', 'password', 'firstName', 'lastName'],
                 where: { email: email },
                 raw: true
             });
@@ -101,9 +101,11 @@ const createNewUser = async (data) => {
             firstName: data.firstName,
             lastName: data.lastName,
             address: data.address,
-            gender: data.gender == 1 ? true : false,
+            gender: data.gender,
             roleID: data.roleID,
             phoneNumber: data.phoneNumber,
+            positionID: data.positionID,
+            image: data.avatar,
         })
 
         return {
@@ -119,7 +121,7 @@ const hashPassword = (password) => {
         return Bcrypt.hashSync(password, salt); // Hash đồng bộ
     } catch (e) {
         console.error("Error in hashing password:", e);
-        throw e; // Ném lỗi nếu có vấn đề khi hash mật khẩu
+        throw e;
     }
 };
 
@@ -149,25 +151,43 @@ const DeleteUser = async (userID) => {
 
 const UpdateUser = async (data) => {
     try {
+        console.log("check data", data)
+        if (!data.id || !data.roleID || !data.positionID || !data.gender) {
+            return {
+                errCode: 2,
+                errMessage: 'Missing required parameter'
+            }
+        }
         let user = await db.User.findOne({
             where: { id: data.id },
         })
         if (!user) {
             return {
-                errCode: 2,
+                errCode: 3,
                 errMessage: 'The user is not exist'
             }
         }
-        await db.User.update(
-            {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                address: data.address,
-            },
-            {
-                where: { id: data.id }
-            }
-        )
+        const updateData = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            address: data.address,
+            gender: data.gender,
+            roleID: data.roleID,
+            positionID: data.positionID,
+            phoneNumber: data.phoneNumber,
+        };
+
+        // Kiểm tra xem có avatar không thì mới thêm vào dữ liệu
+        if (data.avatar) {
+            updateData.image = data.avatar;
+        }
+
+        // Tiến hành cập nhật thông tin người dùng
+        await db.User.update(updateData, {
+            where: { id: data.id },
+            raw: false
+        });
+
         return {
             errCode: 0,
             errMessage: 'The user is updated'
@@ -177,6 +197,25 @@ const UpdateUser = async (data) => {
         throw error; // Ném lỗi ra ngoài để có thể xử lý ở nơi gọi
     }
 }
+const getAllCodeService = async (typeInput) => {
+    try {
+        let res = {}
+        if (!typeInput) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameters !!'
+            }
+        }
+        let allcode = await db.Allcode.findAll({
+            where: { type: typeInput }
+        })
+        res.errCode = 0
+        res.data = allcode
+        return res
+    } catch (e) {
+        console.log(e)
+    }
+}
 
 module.exports = {
     handleUserLogin,
@@ -184,5 +223,6 @@ module.exports = {
     getAllUserService,
     createNewUser,
     DeleteUser,
-    UpdateUser
+    UpdateUser,
+    getAllCodeService
 };

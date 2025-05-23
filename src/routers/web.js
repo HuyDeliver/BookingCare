@@ -1,7 +1,7 @@
 import express from "express"
 import { getHomePage, getCRUDPage, PostCRUDPage, displayCRUDPage, getUpdatePage, postUpdatePage, getDeletePage } from "../controllers/homeController.js"
 import userController from "../controllers/userController.js"
-import db from "../models/index.js"
+import docterController from "../controllers/doctorController.js"
 const router = express.Router()
 
 router.get('/', getHomePage)
@@ -30,6 +30,10 @@ router.post('/api/create-new-users', userController.handleCreateNewUser)
 router.put('/api/update-user', userController.handleUpdateUser)
 
 router.delete('/api/delete-user', userController.handleDeleteUser)
+
+router.get('/api/allcode', userController.getAllCode)
+
+router.get('/api/top-doctor-home', docterController.getTopDoctorHome)
 
 module.exports = router
 

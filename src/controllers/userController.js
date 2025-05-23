@@ -35,11 +35,11 @@ module.exports = {
     },
     handleCreateNewUser: async (req, res) => {
         let message = await userServices.createNewUser(req.body)
-        console.log(">>check message", message)
         return res.status(200).json(message)
     },
     handleEditUser: async (req, res) => {
-
+        let user = await userServices.UpdateUser(req.body)
+        return res.status(200).json(user)
     },
     handleDeleteUser: async (req, res) => {
         if (!req.body.id) {
@@ -61,5 +61,17 @@ module.exports = {
         }
         let message = await userServices.UpdateUser(data)
         return res.status(200).json(message)
+    },
+    getAllCode: async (req, res) => {
+        try {
+            let data = await userServices.getAllCodeService(req.query.type)
+            return res.status(200).json(data)
+        } catch (e) {
+            console.log('get all code: ', e)
+            return res.status(200).json({
+                errCode: -1,
+                errMessage: 'Error from server'
+            })
+        }
     }
 }
