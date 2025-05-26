@@ -10,7 +10,7 @@ const getTopDoctorServices = async (limitInput) => {
             },
             order: [['createdAt', 'DESC']],
             attributes: {
-                exclude: ['password', 'image']
+                exclude: ['password']
             },
             include: [
                 { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] },
@@ -29,6 +29,48 @@ const getTopDoctorServices = async (limitInput) => {
     }
 }
 
+const getAllDoctorService = async () => {
+    try {
+        let doctor = await db.User.findAll({
+            where: { roleID: 'R2' },
+            attributes: {
+                exclude: ['password', 'image']
+            }
+        })
+        return {
+            errCode: 0,
+            data: doctor
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const saveInforDoctorService = async (data) => {
+    try {
+        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        } else {
+            await db.Markdown.create({
+                contentHTML: data.contentHTML,
+                contentMarkdown: data.contentMarkdown,
+                description: data.description,
+                doctorId: data.doctorId
+            })
+            return {
+                errCode: 0,
+                errMessage: 'save infor doctor success'
+            }
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
 module.exports = {
-    getTopDoctorServices
+    getTopDoctorServices,
+    getAllDoctorService,
+    saveInforDoctorService
 }

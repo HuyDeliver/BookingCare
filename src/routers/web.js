@@ -35,6 +35,10 @@ router.get('/api/allcode', userController.getAllCode)
 
 router.get('/api/top-doctor-home', docterController.getTopDoctorHome)
 
+router.get('/api/get-all-doctors', docterController.getAllDoctors)
+
+router.post('/api/save-info-doctors', docterController.postInforDoctor)
+
 module.exports = router
 
 

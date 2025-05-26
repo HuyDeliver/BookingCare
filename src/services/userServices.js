@@ -151,7 +151,6 @@ const DeleteUser = async (userID) => {
 
 const UpdateUser = async (data) => {
     try {
-        console.log("check data", data)
         if (!data.id || !data.roleID || !data.positionID || !data.gender) {
             return {
                 errCode: 2,
