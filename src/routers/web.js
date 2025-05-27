@@ -33,11 +33,14 @@ router.delete('/api/delete-user', userController.handleDeleteUser)
 
 router.get('/api/allcode', userController.getAllCode)
 
+
 router.get('/api/top-doctor-home', docterController.getTopDoctorHome)
 
 router.get('/api/get-all-doctors', docterController.getAllDoctors)
 
 router.post('/api/save-info-doctors', docterController.postInforDoctor)
+
+router.get('/api/get-detail-doctor', docterController.getDetailDoctor)
 
 module.exports = router
 
