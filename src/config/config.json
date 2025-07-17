@@ -9,6 +9,9 @@
     "query": {
       "raw": true
     },
+    "dialectOptions": {
+      "timezone": "Z"
+    },
     "timezone": "+07:00",
     "logging": false
   },

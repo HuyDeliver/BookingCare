@@ -1,6 +1,8 @@
 import { where } from "sequelize"
 import db from "../models"
-
+require('dotenv').config()
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
+import _ from "lodash"
 const getTopDoctorServices = async (limitInput) => {
     try {
         let user = await db.User.findAll({
@@ -48,18 +50,32 @@ const getAllDoctorService = async () => {
 
 const saveInforDoctorService = async (data) => {
     try {
-        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML) {
+        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action) {
             return {
                 errCode: 1,
                 errMessage: 'Missing required parameter'
             }
         } else {
-            await db.Markdown.create({
-                contentHTML: data.contentHTML,
-                contentMarkdown: data.contentMarkdown,
-                description: data.description,
-                doctorId: data.doctorId
-            })
+            if (data.action === 'CREATE') {
+                await db.Markdown.create({
+                    contentHTML: data.contentHTML,
+                    contentMarkdown: data.contentMarkdown,
+                    description: data.description,
+                    doctorId: data.doctorId
+                })
+            } else if (data.action === 'EDIT') {
+                await db.Markdown.update(
+                    {
+                        contentHTML: data.contentHTML,
+                        contentMarkdown: data.contentMarkdown,
+                        description: data.description
+                    },
+                    {
+                        where: { doctorId: data.doctorId }
+                    }
+                )
+            }
+
             return {
                 errCode: 0,
                 errMessage: 'save infor doctor success'
@@ -69,26 +85,30 @@ const saveInforDoctorService = async (data) => {
         console.log(error)
     }
 }
-const getDetailDoctorService = async (id) => {
+const getDetailDoctorService = async (inputId) => {
     try {
-        if (!id) {
+        if (!inputId) {
             return {
                 errCode: 1,
                 errMessage: 'Missing required parameter'
             }
         } else {
             let data = await db.User.findOne({
-                where: { id: id },
+                where: { id: inputId },
                 attributes: {
-                    exclude: ['password', 'image']
+                    exclude: ['password']
                 },
                 include: [
                     { model: db.Markdown, attributes: ['description', 'contentHTML', 'contentMarkdown'] },
                     { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] }
                 ],
-                raw: true,
+                raw: false,
                 nest: true
             })
+            if (data && data.image) {
+                data.image = Buffer.from(data.image, 'base64').toString('binary')
+            }
+            if (!data) data = {}
             return {
                 errCode: 0,
                 data: data
@@ -98,9 +118,94 @@ const getDetailDoctorService = async (id) => {
         console.log(error)
     }
 }
+
+const postDoctorScheduleService = async (data) => {
+    try {
+        if (!data.arrSchedule || !data.doctorID || !data.date) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        } else {
+            let schedule = data.arrSchedule
+            if (schedule && schedule.length > 0) {
+                schedule = schedule.map((item) => {
+                    item.maxNumber = MAX_NUMBER_SCHEDULE
+                    return item
+                })
+            }
+            let existing = await db.Schedule.findAll({
+                where: { doctorID: data.doctorID, date: data.date },
+                attributes: ['timeType', 'date', 'doctorID', 'maxNumber'],
+                raw: true
+            })
+
+            let toCreate = _.differenceWith(schedule, existing, (a, b) => {
+                const formatDate = (d) => new Date(d).toISOString().split('T')[0]; // or use moment(d).format('YYYY-MM-DD')
+                return a.timeType === b.timeType && formatDate(a.date) === formatDate(b.date);
+            });
+
+            if (toCreate && toCreate.length > 0) {
+                await db.Schedule.bulkCreate(schedule)
+                return {
+                    errCode: 0,
+                    errMessage: 'OK'
+                }
+            } else {
+                return {
+                    errCode: 2,
+                    errMessage: 'Duplicate doctor schedule'
+                }
+            }
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+const getDoctorScheduleService = async (doctorID, date) => {
+    try {
+        console.log("check date >>>", doctorID, date)
+        if (!doctorID || !date) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        }
+
+        let data = await db.Schedule.findAll({
+            where: {
+                doctorID: doctorID,
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(
+                        db.Sequelize.fn('DATE', db.Sequelize.col('date')),
+                        '=',
+                        date.split('T')[0] // "2025-07-04"
+                    )
+                ]
+            },
+            include: [
+                { model: db.Allcode, as: 'timeTypeData', attributes: ['value_EN', 'value_VN'] }
+            ],
+            raw: false,
+            nest: true
+
+        })
+        console.log("check data >>>", data)
+
+        return {
+            errCode: 0,
+            data: data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     getTopDoctorServices,
     getAllDoctorService,
     saveInforDoctorService,
-    getDetailDoctorService
+    getDetailDoctorService,
+    postDoctorScheduleService,
+    getDoctorScheduleService
 }

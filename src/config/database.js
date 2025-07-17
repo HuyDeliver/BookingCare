@@ -6,6 +6,13 @@ const sequelize = new Sequelize('hoidanit', 'root', '123456', {
     host: '127.0.0.1',
     dialect: 'mysql',
     port: 3307,
+    dialectOptions: {
+        charset: 'utf8mb4', // Đảm bảo sử dụng utf8mb4
+    },
+    define: {
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_unicode_ci',
+    },
 });
 
 let connectTest = async () => {

@@ -52,9 +52,38 @@ const getDetailDoctor = async (req, res) => {
     }
 }
 
+const postDoctorSchedule = async (req, res) => {
+    try {
+        let info = await doctorService.postDoctorScheduleService(req.body)
+        return res.status(200).json(info)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server',
+        })
+    }
+}
+const getDoctorSchedule = async (req, res) => {
+    try {
+        const { doctorID, date } = req.query
+        let info = await doctorService.getDoctorScheduleService(doctorID, date)
+        return res.status(200).json(info)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server',
+        })
+    }
+}
+
+
 module.exports = {
     getTopDoctorHome,
     getAllDoctors,
     postInforDoctor,
-    getDetailDoctor
+    getDetailDoctor,
+    postDoctorSchedule,
+    getDoctorSchedule
 }

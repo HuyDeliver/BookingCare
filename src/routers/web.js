@@ -42,6 +42,9 @@ router.post('/api/save-info-doctors', docterController.postInforDoctor)
 
 router.get('/api/get-detail-doctor', docterController.getDetailDoctor)
 
+router.post('/api/post-doctor-schedule', docterController.postDoctorSchedule)
+router.get('/api/get-schedule-doctor', docterController.getDoctorSchedule)
+
 module.exports = router
 
 

@@ -15,7 +15,7 @@ module.exports = {
             maxNumber: {
                 type: Sequelize.INTEGER
             },
-            DATE: {
+            date: {
                 type: Sequelize.DATE
             },
             timeType: {
