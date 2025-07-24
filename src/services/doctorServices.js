@@ -50,7 +50,11 @@ const getAllDoctorService = async () => {
 
 const saveInforDoctorService = async (data) => {
     try {
-        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action) {
+        console.log("check data: ", data)
+        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action ||
+            !data.selectedPrice || !data.selectedPayment || !data.selectedProvince || !data.nameClinic ||
+            !data.addressClinic || !data.note
+        ) {
             return {
                 errCode: 1,
                 errMessage: 'Missing required parameter'
@@ -63,12 +67,34 @@ const saveInforDoctorService = async (data) => {
                     description: data.description,
                     doctorId: data.doctorId
                 })
+                await db.Doctor_infor.create({
+                    priceId: data.selectedPrice,
+                    paymentId: data.selectedPayment,
+                    provinceId: data.selectedProvince,
+                    nameClinic: data.nameClinic,
+                    addressClinic: data.addressClinic,
+                    note: data.note,
+                    doctorId: data.doctorId
+                })
             } else if (data.action === 'EDIT') {
                 await db.Markdown.update(
                     {
                         contentHTML: data.contentHTML,
                         contentMarkdown: data.contentMarkdown,
                         description: data.description
+                    },
+                    {
+                        where: { doctorId: data.doctorId }
+                    }
+                )
+                await db.Doctor_infor.update(
+                    {
+                        priceId: data.selectedPrice,
+                        paymentId: data.selectedPayment,
+                        provinceId: data.selectedProvince,
+                        nameClinic: data.nameClinic,
+                        addressClinic: data.addressClinic,
+                        note: data.note
                     },
                     {
                         where: { doctorId: data.doctorId }
@@ -100,7 +126,18 @@ const getDetailDoctorService = async (inputId) => {
                 },
                 include: [
                     { model: db.Markdown, attributes: ['description', 'contentHTML', 'contentMarkdown'] },
-                    { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] }
+                    { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] },
+                    {
+                        model: db.Doctor_infor,
+                        attributes: {
+                            exclude: ['id', 'doctorId']
+                        },
+                        include: [
+                            { model: db.Allcode, as: 'priceData', attributes: ['value_EN', 'value_VN'] },
+                            { model: db.Allcode, as: 'paymentData', attributes: ['value_EN', 'value_VN'] },
+                            { model: db.Allcode, as: 'provinceData', attributes: ['value_EN', 'value_VN'] }
+                        ]
+                    }
                 ],
                 raw: false,
                 nest: true
@@ -164,7 +201,6 @@ const postDoctorScheduleService = async (data) => {
 }
 const getDoctorScheduleService = async (doctorID, date) => {
     try {
-        console.log("check date >>>", doctorID, date)
         if (!doctorID || !date) {
             return {
                 errCode: 1,
@@ -184,17 +220,44 @@ const getDoctorScheduleService = async (doctorID, date) => {
                 ]
             },
             include: [
-                { model: db.Allcode, as: 'timeTypeData', attributes: ['value_EN', 'value_VN'] }
+                { model: db.Allcode, as: 'timeTypeData', attributes: ['value_EN', 'value_VN'] },
             ],
             raw: false,
             nest: true
 
         })
-        console.log("check data >>>", data)
-
         return {
             errCode: 0,
             data: data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+const getDoctorBookingInforService = async (doctorID) => {
+    try {
+        console.log(doctorID)
+        if (!doctorID) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        } else {
+            let data = await db.Doctor_infor.findOne({
+                where: { doctorId: doctorID },
+                include: [
+                    { model: db.Allcode, as: 'priceData', attributes: ['value_EN', 'value_VN'] },
+                    { model: db.Allcode, as: 'paymentData', attributes: ['value_EN', 'value_VN'] },
+                    { model: db.Allcode, as: 'provinceData', attributes: ['value_EN', 'value_VN'] }
+                ],
+                raw: false,
+                nest: true
+            })
+            console.log(data)
+            return {
+                errCode: 0,
+                data: data
+            }
         }
     } catch (error) {
         console.log(error)
@@ -207,5 +270,6 @@ module.exports = {
     saveInforDoctorService,
     getDetailDoctorService,
     postDoctorScheduleService,
-    getDoctorScheduleService
+    getDoctorScheduleService,
+    getDoctorBookingInforService
 }
