@@ -18,8 +18,13 @@ module.exports = {
                 type: Sequelize.INTEGER
             },
             date: {
+                type: Sequelize.DATE,
                 allowNull: false,
-                type: Sequelize.DATE
+                defaultValue: Sequelize.NOW
+            },
+            birthday: {
+                allowNull: false,
+                type: Sequelize.DATEONLY
             },
             timeType: {
                 allowNull: false,

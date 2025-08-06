@@ -3,6 +3,7 @@ import db from "../models"
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 import _ from "lodash"
+
 const getTopDoctorServices = async (limitInput) => {
     try {
         let user = await db.User.findAll({
@@ -50,7 +51,6 @@ const getAllDoctorService = async () => {
 
 const saveInforDoctorService = async (data) => {
     try {
-        console.log("check data: ", data)
         if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action ||
             !data.selectedPrice || !data.selectedPayment || !data.selectedProvince || !data.nameClinic ||
             !data.addressClinic || !data.note
@@ -226,9 +226,29 @@ const getDoctorScheduleService = async (doctorID, date) => {
             nest: true
 
         })
+        let bookingInfor = await db.Booking.findAll({
+            where: {
+                doctorID: doctorID,
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(
+                        db.Sequelize.fn('DATE', db.Sequelize.col('date')),
+                        '=',
+                        date.split('T')[0] // "2025-07-04"
+                    )
+                ],
+                statusID: 'S1'
+            },
+            attributes: ['timeType'],
+            raw: true
+        })
+        let bookingSlot = bookingInfor.map(item => item.timeType)
+
+        let availableSchedule = data.filter(data => {
+            return !bookingSlot.includes(data.timeType)
+        })
         return {
             errCode: 0,
-            data: data
+            data: availableSchedule
         }
     } catch (error) {
         console.log(error)
@@ -236,7 +256,6 @@ const getDoctorScheduleService = async (doctorID, date) => {
 }
 const getDoctorBookingInforService = async (doctorID) => {
     try {
-        console.log(doctorID)
         if (!doctorID) {
             return {
                 errCode: 1,
@@ -253,7 +272,52 @@ const getDoctorBookingInforService = async (doctorID) => {
                 raw: false,
                 nest: true
             })
-            console.log(data)
+            return {
+                errCode: 0,
+                data: data
+            }
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const getProfileDoctorService = async (doctorID) => {
+    try {
+        console.log(doctorID)
+        if (!doctorID) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        } else {
+            let data = await db.User.findOne({
+                where: { id: doctorID },
+                attributes: {
+                    exclude: ['password']
+                },
+                include: [
+                    { model: db.Markdown, attributes: ['description', 'contentHTML', 'contentMarkdown'] },
+                    { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] },
+                    {
+                        model: db.Doctor_infor,
+                        attributes: {
+                            exclude: ['id', 'doctorId']
+                        },
+                        include: [
+                            { model: db.Allcode, as: 'priceData', attributes: ['value_EN', 'value_VN'] },
+                            { model: db.Allcode, as: 'paymentData', attributes: ['value_EN', 'value_VN'] },
+                            { model: db.Allcode, as: 'provinceData', attributes: ['value_EN', 'value_VN'] }
+                        ]
+                    }
+                ],
+                raw: false,
+                nest: true
+            })
+            if (data && data.image) {
+                data.image = Buffer.from(data.image, 'base64').toString('binary')
+            }
+            if (!data) data = {}
             return {
                 errCode: 0,
                 data: data
@@ -271,5 +335,6 @@ module.exports = {
     getDetailDoctorService,
     postDoctorScheduleService,
     getDoctorScheduleService,
-    getDoctorBookingInforService
+    getDoctorBookingInforService,
+    getProfileDoctorService
 }

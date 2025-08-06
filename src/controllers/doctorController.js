@@ -89,6 +89,19 @@ const getDoctorBookingInfor = async (req, res) => {
         })
     }
 }
+const getProfileDoctor = async (req, res) => {
+    try {
+        console.log(req.query.doctorID)
+        let info = await doctorService.getProfileDoctorService(req.query.doctorID)
+        return res.status(200).json(info)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server',
+        })
+    }
+}
 
 
 module.exports = {
@@ -98,5 +111,6 @@ module.exports = {
     getDetailDoctor,
     postDoctorSchedule,
     getDoctorSchedule,
-    getDoctorBookingInfor
+    getDoctorBookingInfor,
+    getProfileDoctor
 }
