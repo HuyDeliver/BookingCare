@@ -3,6 +3,7 @@ import db from "../models"
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 import _ from "lodash"
+import { emitter } from "../utils/emitter"
 
 const getTopDoctorServices = async (limitInput) => {
     try {
@@ -221,6 +222,7 @@ const getDoctorScheduleService = async (doctorID, date) => {
             },
             include: [
                 { model: db.Allcode, as: 'timeTypeData', attributes: ['value_EN', 'value_VN'] },
+                { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] }
             ],
             raw: false,
             nest: true
@@ -233,19 +235,25 @@ const getDoctorScheduleService = async (doctorID, date) => {
                     db.Sequelize.where(
                         db.Sequelize.fn('DATE', db.Sequelize.col('date')),
                         '=',
-                        date.split('T')[0] // "2025-07-04"
+                        date.split('T')[0]
                     )
                 ],
-                statusID: 'S1'
             },
-            attributes: ['timeType'],
-            raw: true
+            attributes: ['timeType', 'statusID', 'patientID'],
+            raw: false
         })
+
+        let bookingStatus = bookingInfor.map(item => item.statusID)
+        let bookingPatient = bookingInfor.map(item => item.patientID)
+        emitter.emit('ONE_TIME_BOOKING', bookingStatus, bookingPatient)
+
         let bookingSlot = bookingInfor.map(item => item.timeType)
 
         let availableSchedule = data.filter(data => {
             return !bookingSlot.includes(data.timeType)
         })
+
+
         return {
             errCode: 0,
             data: availableSchedule

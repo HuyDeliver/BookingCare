@@ -53,6 +53,12 @@ router.get('/api/get-profile-doctor', docterController.getProfileDoctor)
 
 router.post('/api/post-patient-booking', patientController.postBookingAppointment)
 
+router.post('/api/post-patient-booking', patientController.postBookingAppointment)
+
+router.post('/api/verify-booking-appointment', patientController.postVerifyBookingAppointment)
+
+// router.get('/api/get-patient-booking', patientController.getPatientBooking)
+
 module.exports = router
 
 
