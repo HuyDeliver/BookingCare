@@ -50,15 +50,30 @@ const getAllDoctorService = async () => {
     }
 }
 
+const checkValidInput = (data) => {
+    let isValid = true
+    let arr = ['doctorId', 'contentMarkdown', 'contentHTML', 'action',
+        'selectedPrice', 'selectedPayment', 'selectedProvince', 'nameClinic',
+        'addressClinic', 'note', 'description', 'selectedSpecialty']
+    let element = ''
+    for (let i = 0; i < arr.length; i++) {
+        if (!data[arr[i]]) {
+            isValid = false
+            element = arr[i]
+            break
+        }
+    }
+    return {
+        isValid, element
+    }
+}
 const saveInforDoctorService = async (data) => {
     try {
-        if (!data.doctorId || !data.contentMarkdown || !data.contentHTML || !data.action ||
-            !data.selectedPrice || !data.selectedPayment || !data.selectedProvince || !data.nameClinic ||
-            !data.addressClinic || !data.note
-        ) {
+        let check = checkValidInput(data)
+        if (check.isValid === false) {
             return {
                 errCode: 1,
-                errMessage: 'Missing required parameter'
+                errMessage: `Missing required parameter ${check.element}`
             }
         } else {
             if (data.action === 'CREATE') {
@@ -75,7 +90,8 @@ const saveInforDoctorService = async (data) => {
                     nameClinic: data.nameClinic,
                     addressClinic: data.addressClinic,
                     note: data.note,
-                    doctorId: data.doctorId
+                    doctorId: data.doctorId,
+                    specialtyId: data.selectedSpecialty
                 })
             } else if (data.action === 'EDIT') {
                 await db.Markdown.update(
@@ -95,6 +111,7 @@ const saveInforDoctorService = async (data) => {
                         provinceId: data.selectedProvince,
                         nameClinic: data.nameClinic,
                         addressClinic: data.addressClinic,
+                        specialtyId: data.selectedSpecialty,
                         note: data.note
                     },
                     {
@@ -146,7 +163,6 @@ const getDetailDoctorService = async (inputId) => {
             if (data && data.image) {
                 data.image = Buffer.from(data.image, 'base64').toString('binary')
             }
-            if (!data) data = {}
             return {
                 errCode: 0,
                 data: data
@@ -292,7 +308,6 @@ const getDoctorBookingInforService = async (doctorID) => {
 
 const getProfileDoctorService = async (doctorID) => {
     try {
-        console.log(doctorID)
         if (!doctorID) {
             return {
                 errCode: 1,

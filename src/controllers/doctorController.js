@@ -91,7 +91,6 @@ const getDoctorBookingInfor = async (req, res) => {
 }
 const getProfileDoctor = async (req, res) => {
     try {
-        console.log(req.query.doctorID)
         let info = await doctorService.getProfileDoctorService(req.query.doctorID)
         return res.status(200).json(info)
     } catch (error) {

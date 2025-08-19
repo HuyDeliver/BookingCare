@@ -3,6 +3,7 @@ import { getHomePage, getCRUDPage, PostCRUDPage, displayCRUDPage, getUpdatePage,
 import userController from "../controllers/userController.js"
 import docterController from "../controllers/doctorController.js"
 import patientController from '../controllers/patientController.js'
+import { createNewSpecialty, getAllSpecialty, getDetailSpecialty, postDetailSpecialty } from "../controllers/specialtyController.js"
 const router = express.Router()
 
 router.get('/', getHomePage)
@@ -57,8 +58,13 @@ router.post('/api/post-patient-booking', patientController.postBookingAppointmen
 
 router.post('/api/verify-booking-appointment', patientController.postVerifyBookingAppointment)
 
-// router.get('/api/get-patient-booking', patientController.getPatientBooking)
+router.post('/api/create-new-specialty', createNewSpecialty)
 
+router.get('/api/get-all-specialty', getAllSpecialty)
+
+router.get('/api/get-detail-specialty', getDetailSpecialty)
+
+router.post('/api/post-detail-specialty', postDetailSpecialty)
 module.exports = router
 
 
