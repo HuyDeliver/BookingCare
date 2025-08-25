@@ -102,6 +102,33 @@ const getProfileDoctor = async (req, res) => {
     }
 }
 
+const getListPatientBooking = async (req, res) => {
+    try {
+        const { doctorID, date } = req.query
+        let info = await doctorService.getListPatientBookingServices(doctorID, date)
+        return res.status(200).json(info)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server',
+        })
+    }
+}
+
+const postSendRedemy = async (req, res) => {
+    try {
+        let info = await doctorService.postSendRedemyServices(req.body)
+        return res.status(200).json(info)
+    } catch (error) {
+        console.log(error)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server',
+        })
+    }
+}
+
 
 module.exports = {
     getTopDoctorHome,
@@ -111,5 +138,7 @@ module.exports = {
     postDoctorSchedule,
     getDoctorSchedule,
     getDoctorBookingInfor,
-    getProfileDoctor
+    getProfileDoctor,
+    getListPatientBooking,
+    postSendRedemy
 }

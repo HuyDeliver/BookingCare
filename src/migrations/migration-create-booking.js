@@ -28,7 +28,11 @@ module.exports = {
             },
             timeType: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.STRING,
+            },
+            reason: {
+                type: Sequelize.TEXT('long'),
+                allowNull: false
             },
             token: {
                 type: Sequelize.STRING

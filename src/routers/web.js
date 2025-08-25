@@ -4,6 +4,7 @@ import userController from "../controllers/userController.js"
 import docterController from "../controllers/doctorController.js"
 import patientController from '../controllers/patientController.js'
 import { createNewSpecialty, getAllSpecialty, getDetailSpecialty, postDetailSpecialty } from "../controllers/specialtyController.js"
+import { createNewClinic, getAllClinic, getDetailClinic, postDetailClinic } from "../controllers/clinicController.js"
 const router = express.Router()
 
 router.get('/', getHomePage)
@@ -52,6 +53,13 @@ router.get('/api/get-booking-infor-doctor', docterController.getDoctorBookingInf
 
 router.get('/api/get-profile-doctor', docterController.getProfileDoctor)
 
+router.get('/api/get-list-patient-booking', docterController.getListPatientBooking)
+
+router.post('/api/post-send-redemy', docterController.postSendRedemy)
+
+
+
+
 router.post('/api/post-patient-booking', patientController.postBookingAppointment)
 
 router.post('/api/post-patient-booking', patientController.postBookingAppointment)
@@ -65,6 +73,20 @@ router.get('/api/get-all-specialty', getAllSpecialty)
 router.get('/api/get-detail-specialty', getDetailSpecialty)
 
 router.post('/api/post-detail-specialty', postDetailSpecialty)
+
+
+
+
+router.post('/api/create-new-clinic', createNewClinic)
+
+router.get('/api/get-all-clinic', getAllClinic)
+
+router.get('/api/get-detail-clinic', getDetailClinic)
+
+router.post('/api/post-detail-clinic', postDetailClinic)
+
+
+
 module.exports = router
 
 

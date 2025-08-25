@@ -13,7 +13,9 @@ const buildUrlEmail = (doctorID, token) => {
 
 const postBookingAppointmentService = async (data) => {
     try {
-        if (!data.email || !data.doctorID || !data.timeType || !data.birthdayDate || !data.patientName || !data.dateBooking) {
+        console.log(data)
+        if (!data.email || !data.doctorID || !data.timeType || !data.birthdayDate || !data.lastName || !data.firstName
+            || !data.dateBooking || !data.phoneNumber || !data.address || !data.selectedGender || !data.reason) {
             return {
                 errCode: 1,
                 errMessage: 'Missing required parameters'
@@ -23,18 +25,24 @@ const postBookingAppointmentService = async (data) => {
             let user = await db.User.findOrCreate({
                 where: { email: data.email },
                 default: {
+                    firstName: data.firstName,
+                    lastname: data.lastName,
                     email: data.email,
-                    roleID: 'R3'
+                    roleID: 'R3',
+                    gender: data.selectedGender,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
                 }
             })
             if (user && user[0]) {
                 let existingBooking = await db.Booking.findOne({
                     where: {
                         patientID: user[0].id,
-                        date: data.dateBooking
+                        statusID: { [db.Sequelize.Op.ne]: 'S3' },
+                        date: { [db.Sequelize.Op.gte]: new Date() }
                     }
                 })
-                if (existingBooking && existingBooking.statusID !== 'S3') {
+                if (existingBooking) {
                     return {
                         errCode: 2,
                         errMessage: "You have an uncompleted appointment for the day"
@@ -50,11 +58,13 @@ const postBookingAppointmentService = async (data) => {
                 date: data.dateBooking,
                 birthday: data.birthdayDate,
                 timeType: data.timeType,
+                reason: data.reason,
                 token: token
             })
             await sendSimpleEmail({
                 receiveEmail: data.email,
-                patientName: data.patientName,
+                firstName: data.firstName,
+                lastName: data.lastName,
                 time: data.timeString,
                 doctorName: data.doctorName,
                 redirectLink: buildUrlEmail(data.doctorID, token),

@@ -1,8 +1,9 @@
 import db from "../models"
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
-import _ from "lodash"
+import _, { includes } from "lodash"
 import { emitter } from "../utils/emitter"
+import { sendAttackment } from "./emailService"
 
 const getTopDoctorServices = async (limitInput) => {
     try {
@@ -17,7 +18,20 @@ const getTopDoctorServices = async (limitInput) => {
             },
             include: [
                 { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] },
-                { model: db.Allcode, as: 'genderData', attributes: ['value_EN', 'value_VN'] }
+                { model: db.Allcode, as: 'genderData', attributes: ['value_EN', 'value_VN'] },
+                {
+                    model: db.Doctor_infor,
+                    where: {
+                        doctorId: db.Sequelize.col('User.id'),
+                    },
+                    include: [
+                        {
+                            model: db.Specialty,
+                            where: { id: db.Sequelize.col('Doctor_infor.specialtyId') },
+                            attributes: ['name']   // chỉ lấy cột name
+                        }
+                    ]
+                }
             ],
             raw: true,
             nest: true
@@ -53,7 +67,7 @@ const checkValidInput = (data) => {
     let isValid = true
     let arr = ['doctorId', 'contentMarkdown', 'contentHTML', 'action',
         'selectedPrice', 'selectedPayment', 'selectedProvince', 'nameClinic',
-        'addressClinic', 'note', 'description', 'selectedSpecialty']
+        'addressClinic', 'note', 'description', 'selectedSpecialty', 'selectedClinic']
     let element = ''
     for (let i = 0; i < arr.length; i++) {
         if (!data[arr[i]]) {
@@ -90,7 +104,8 @@ const saveInforDoctorService = async (data) => {
                     addressClinic: data.addressClinic,
                     note: data.note,
                     doctorId: data.doctorId,
-                    specialtyId: data.selectedSpecialty
+                    specialtyId: data.selectedSpecialty,
+                    clinicId: data.selectedClinic
                 })
             } else if (data.action === 'EDIT') {
                 await db.Markdown.update(
@@ -111,6 +126,7 @@ const saveInforDoctorService = async (data) => {
                         nameClinic: data.nameClinic,
                         addressClinic: data.addressClinic,
                         specialtyId: data.selectedSpecialty,
+                        clinicId: data.selectedClinic,
                         note: data.note
                     },
                     {
@@ -349,7 +365,82 @@ const getProfileDoctorService = async (doctorID) => {
         console.log(error)
     }
 }
+const getListPatientBookingServices = async (doctorID, date) => {
+    try {
+        if (!doctorID || !date) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        }
 
+        let data = await db.Booking.findAll({
+            where: {
+                doctorID: doctorID,
+                statusID: 'S2',
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(
+                        db.Sequelize.fn('DATE', db.Sequelize.col('date')),
+                        '=',
+                        date.split('T')[0] // "2025-07-04"
+                    )
+                ]
+            },
+            include: [
+                {
+                    model: db.User,
+                    as: 'patientData',
+                    attributes: ['email', 'firstName', 'lastName'],
+                    include: [
+                        { model: db.Allcode, as: 'genderData', attributes: ['value_EN', 'value_VN'] }
+                    ]
+                },
+                { model: db.Allcode, as: 'timeTypeDataPatient', attributes: ['value_EN', 'value_VN'] }
+            ],
+            raw: false,
+            nest: true
+
+        })
+
+        return {
+            errCode: 0,
+            data: data
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+const postSendRedemyServices = async (data) => {
+    try {
+        if (!data.doctorID || !data.email || !data.patientID || !data.timeType) {
+            return {
+                errCode: 1,
+                errMessage: 'Missing required parameter'
+            }
+        } else {
+            await db.Booking.update(
+                {
+                    statusID: 'S3'
+                },
+                {
+                    where: {
+                        doctorID: data.doctorID,
+                        patientID: data.patientID,
+                        timeType: data.timeType,
+                        statusID: 'S2'
+                    }
+                }
+            )
+            await sendAttackment(data)
+            return {
+                errCode: 0,
+                errMessage: 'Confirm success'
+            }
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
 module.exports = {
     getTopDoctorServices,
     getAllDoctorService,
@@ -358,5 +449,7 @@ module.exports = {
     postDoctorScheduleService,
     getDoctorScheduleService,
     getDoctorBookingInforService,
-    getProfileDoctorService
+    getProfileDoctorService,
+    getListPatientBookingServices,
+    postSendRedemyServices
 }
