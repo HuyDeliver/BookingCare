@@ -1,4 +1,3 @@
-import { where } from "sequelize"
 import db from "../models"
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
