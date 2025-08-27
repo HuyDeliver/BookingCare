@@ -5,6 +5,7 @@ import docterController from "../controllers/doctorController.js"
 import patientController from '../controllers/patientController.js'
 import { createNewSpecialty, getAllSpecialty, getDetailSpecialty, postDetailSpecialty } from "../controllers/specialtyController.js"
 import { createNewClinic, getAllClinic, getDetailClinic, postDetailClinic } from "../controllers/clinicController.js"
+import { searchBar } from "../controllers/searchController.js"
 const router = express.Router()
 
 router.get('/', getHomePage)
@@ -85,7 +86,7 @@ router.get('/api/get-detail-clinic', getDetailClinic)
 
 router.post('/api/post-detail-clinic', postDetailClinic)
 
-
+router.get('/api/search', searchBar)
 
 module.exports = router
 

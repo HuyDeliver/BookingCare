@@ -21,14 +21,11 @@ const getTopDoctorServices = async (limitInput) => {
                 { model: db.Allcode, as: 'genderData', attributes: ['value_EN', 'value_VN'] },
                 {
                     model: db.Doctor_infor,
-                    where: {
-                        doctorId: db.Sequelize.col('User.id'),
-                    },
+                    attributes: ['id', 'doctorId', 'clinicId', 'specialtyId', 'priceId', 'provinceId', 'paymentId', 'addressClinic', 'nameClinic', 'note', 'count'],
                     include: [
                         {
                             model: db.Specialty,
-                            where: { id: db.Sequelize.col('Doctor_infor.specialtyId') },
-                            attributes: ['name']   // chỉ lấy cột name
+                            attributes: ['id', 'name']
                         }
                     ]
                 }
@@ -90,12 +87,25 @@ const saveInforDoctorService = async (data) => {
             }
         } else {
             if (data.action === 'CREATE') {
+                // Kiểm tra xem đã tồn tại chưa
+                const doctorInfor = await db.Doctor_infor.findOne({
+                    where: { doctorId: data.doctorId }
+                });
+
+                if (doctorInfor) {
+                    return {
+                        errCode: 2,
+                        errMessage: 'Doctor information already exists'
+                    }
+                }
+
                 await db.Markdown.create({
                     contentHTML: data.contentHTML,
                     contentMarkdown: data.contentMarkdown,
                     description: data.description,
                     doctorId: data.doctorId
-                })
+                });
+
                 await db.Doctor_infor.create({
                     priceId: data.selectedPrice,
                     paymentId: data.selectedPayment,
@@ -106,8 +116,10 @@ const saveInforDoctorService = async (data) => {
                     doctorId: data.doctorId,
                     specialtyId: data.selectedSpecialty,
                     clinicId: data.selectedClinic
-                })
-            } else if (data.action === 'EDIT') {
+                });
+            }
+
+            else if (data.action === 'EDIT') {
                 await db.Markdown.update(
                     {
                         contentHTML: data.contentHTML,

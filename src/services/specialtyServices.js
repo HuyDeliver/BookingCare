@@ -67,7 +67,7 @@ const getDetailSpecialtyServices = async (inputId, location) => {
                 } else if (location === 'ALL') {
                     doctorSpecialty = await db.Doctor_infor.findAll({
                         where: { specialtyId: inputId },
-                        attributes: ['doctorID', 'provinceId']
+                        attributes: ['doctorId', 'provinceId']
                     })
                 } else {
                     doctorSpecialty = await db.Doctor_infor.findAll({

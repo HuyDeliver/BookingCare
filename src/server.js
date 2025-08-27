@@ -1,7 +1,7 @@
 import express from "express"
 import configViewEngine from "./config/viewEngine.js"
 import router from "./routers/web.js"
-import connectTest from "./config/database.js"
+import connectTest from "./config/connectDB.js"
 import cors from "cors"
 
 require("dotenv").config()
