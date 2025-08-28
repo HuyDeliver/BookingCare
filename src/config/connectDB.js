@@ -24,7 +24,13 @@ const sequelize = new Sequelize(
         query: {
             "raw": true
         },
-        timezone: "+07:00"
+        timezone: "+07:00",
+        pool: {
+            max: 20,         // số kết nối tối đa
+            min: 0,          // số kết nối tối thiểu
+            acquire: 30000,  // thời gian chờ tối đa để lấy connection
+            idle: 10000      // thời gian connection rảnh trước khi bị release
+        }
     });
 
 let connectDB = async () => {

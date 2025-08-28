@@ -1,5 +1,7 @@
 const { where } = require("sequelize")
 const db = require("../models")
+const { convertToWebp } = require("../utils/convertWebp")
+const { orderBy } = require("lodash")
 
 const createNewSpecialtyService = async (data) => {
     try {
@@ -9,9 +11,10 @@ const createNewSpecialtyService = async (data) => {
                 errMessage: 'Missing required parameter'
             }
         } else {
+            let imageWebp = await convertToWebp(data.avatar)
             await db.Specialty.create({
                 name: data.name,
-                image: data.avatar,
+                image: imageWebp,
                 descriptionMarkdown: data.descriptionMarkdown,
                 descriptionHTML: data.descriptionHTML
             })
@@ -26,7 +29,12 @@ const createNewSpecialtyService = async (data) => {
 }
 const getAllSpecialtyService = async () => {
     try {
-        let data = await db.Specialty.findAll()
+        let data = await db.Specialty.findAll({
+            attributes: {
+                exclude: ['descriptionMarkdown', 'descriptionHTML', 'createdAt', 'updatedAt']
+            },
+            order: [['id', 'ASC']]
+        })
         if (data && data.length > 0) {
             data.map((item) => {
                 item.image = Buffer.from(item.image, 'base64').toString('binary')
@@ -100,7 +108,7 @@ const postDetailSpecialtyServices = async (data) => {
             await db.Specialty.update(
                 {
                     name: data.name,
-                    image: data.avatar,
+                    image: await convertToWebp(data.avatar),
                     descriptionMarkdown: data.descriptionMarkdown,
                     descriptionHTML: data.descriptionHTML
                 },

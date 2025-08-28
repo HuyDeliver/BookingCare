@@ -1,5 +1,6 @@
 const { where } = require("sequelize")
 const db = require("../models")
+const { convertToWebp } = require("../utils/convertWebp")
 
 const createNewClinicService = async (data) => {
     try {
@@ -9,15 +10,17 @@ const createNewClinicService = async (data) => {
                 errMessage: 'Missing required parameter'
             }
         } else {
-            await db.Clinic.create({
-                name: data.name,
-                address: data.address,
-                image: data.avatar,
-                provinceId: data.province,
-                bgImage: data.background,
-                descriptionMarkdown: data.descriptionMarkdown,
-                descriptionHTML: data.descriptionHTML
-            })
+            await db.Clinic.create(
+                {
+                    name: data.name,
+                    address: data.address,
+                    image: await convertToWebp(data.avatar),
+                    provinceId: data.province,
+                    bgImage: await convertToWebp(data.background),
+                    descriptionMarkdown: data.descriptionMarkdown,
+                    descriptionHTML: data.descriptionHTML
+                },
+            )
             return {
                 errCode: 0,
                 errMessage: 'Save new clinic success'
@@ -29,18 +32,23 @@ const createNewClinicService = async (data) => {
 }
 const getAllClinicService = async () => {
     try {
-        let data = await db.Clinic.findAll()
+        let data = await db.Clinic.findAll({
+            attributes: {
+                exclude: ['descriptionHTML', 'descriptionMarkdown', 'updatedAt', 'provinceId', 'createdAt', 'address', 'bgImage']
+            },
+            order: [['id', 'ASC']],
+        },
+        )
         if (data && data.length > 0) {
             data.map((item) => {
                 item.image = Buffer.from(item.image, 'base64').toString('binary')
-                item.bgImage = Buffer.from(item.bgImage, 'base64').toString('binary')
                 return item
             })
         }
         return {
             errCode: 0,
             errMessage: 'success',
-            data
+            data: data
         }
     } catch (error) {
         console.log(error)
@@ -58,6 +66,9 @@ const getDetailClinicServices = async (inputId) => {
                 where: { id: inputId },
                 include: [
                     { model: db.Doctor_infor, attributes: ['doctorId'] }
+                ],
+                order: [
+                    ['id', 'ASC'],
                 ],
                 raw: false,
                 nest: true
@@ -87,9 +98,9 @@ const postDetailClinicServices = async (data) => {
             await db.Clinic.update(
                 {
                     name: data.name,
-                    image: data.avatar,
+                    image: await convertToWebp(data.avatar),
                     provinceId: data.province,
-                    bgImage: data.background,
+                    bgImage: await convertToWebp(data.background),
                     descriptionMarkdown: data.descriptionMarkdown,
                     descriptionHTML: data.descriptionHTML
                 },

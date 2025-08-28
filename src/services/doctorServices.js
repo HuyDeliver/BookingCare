@@ -13,15 +13,14 @@ const getTopDoctorServices = async (limitInput) => {
                 roleID: 'R2'
             },
             order: [['createdAt', 'DESC']],
-            attributes: {
-                exclude: ['password']
-            },
+            attributes: ['firstName', 'lastName', 'id', 'image'],
             include: [
                 { model: db.Allcode, as: 'positionData', attributes: ['value_EN', 'value_VN'] },
-                { model: db.Allcode, as: 'genderData', attributes: ['value_EN', 'value_VN'] },
                 {
                     model: db.Doctor_infor,
-                    attributes: ['id', 'doctorId', 'clinicId', 'specialtyId', 'priceId', 'provinceId', 'paymentId', 'addressClinic', 'nameClinic', 'note', 'count'],
+                    attributes: {
+                        exclude: ['id', 'doctorId', 'clinicId', 'specialtyId', 'priceId', 'provinceId', 'paymentId', 'addressClinic', 'nameClinic', 'note', 'count']
+                    },
                     include: [
                         {
                             model: db.Specialty,
