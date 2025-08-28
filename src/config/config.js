@@ -10,15 +10,18 @@ module.exports = {
     "define": {
       "freezeTableName": true
     },
-    dialectOptions:
-      process.env.DB_SSL === 'true' ?
-        {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false
-          }
-        } : {}
-    ,
+    dialectOptions: {
+      ...(process.env.DB_SSL === 'true' ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      } : {}),
+      // Thêm cấu hình để ưu tiên IPv4
+      family: 4,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 0,
+    },
     "timezone": "+07:00"
   },
   "test": {

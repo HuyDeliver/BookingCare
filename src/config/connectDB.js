@@ -12,15 +12,18 @@ const sequelize = new Sequelize(
         port: process.env.DB_PORT,
         dialect: 'postgres',
         logging: false,
-        dialectOptions:
-            process.env.DB_SSL === 'true' ?
-                {
-                    ssl: {
-                        require: true,
-                        rejectUnauthorized: false
-                    }
-                } : {}
-        ,
+        dialectOptions: {
+            ...(process.env.DB_SSL === 'true' ? {
+                ssl: {
+                    require: true,
+                    rejectUnauthorized: false
+                }
+            } : {}),
+            // Thêm cấu hình để ưu tiên IPv4
+            family: 4,
+            keepAlive: true,
+            keepAliveInitialDelayMillis: 0,
+        },
         query: {
             "raw": true
         },
@@ -28,8 +31,31 @@ const sequelize = new Sequelize(
         pool: {
             max: 20,         // số kết nối tối đa
             min: 0,          // số kết nối tối thiểu
-            acquire: 30000,  // thời gian chờ tối đa để lấy connection
-            idle: 10000      // thời gian connection rảnh trước khi bị release
+            acquire: 60000,  // thời gian chờ tối đa để lấy connection
+            idle: 10000,
+            evict: 1000,     // thời gian check connection dead
+            handleDisconnects: true    // thời gian connection rảnh trước khi bị release
+        },
+        retry: {
+            match: [
+                /ETIMEDOUT/,
+                /EHOSTUNREACH/,
+                /ECONNRESET/,
+                /ECONNREFUSED/,
+                /ETIMEDOUT/,
+                /ESOCKETTIMEDOUT/,
+                /EHOSTUNREACH/,
+                /EPIPE/,
+                /EAI_AGAIN/,
+                /SequelizeConnectionError/,
+                /SequelizeConnectionRefusedError/,
+                /SequelizeHostNotFoundError/,
+                /SequelizeHostNotReachableError/,
+                /SequelizeInvalidConnectionError/,
+                /SequelizeConnectionTimedOutError/,
+                /ENETUNREACH/
+            ],
+            max: 5
         }
     });
 
