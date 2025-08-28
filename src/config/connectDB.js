@@ -1,53 +1,106 @@
-// connectDB.js - SUPAVISOR SOLUTION
+// connectDB.js - SINGLE CONNECTION APPROACH
 const { Sequelize } = require('sequelize');
+const dns = require('dns');
 require('dotenv').config();
 
-// Force IPv4 first for Node.js
-process.env.NODE_OPTIONS = '--dns-result-order=ipv4first';
+// Force IPv4 DNS resolution globally
+dns.setDefaultResultOrder('ipv4first');
+
+// Manual IPv4 hostname resolution
+const resolveToIPv4 = (hostname) => {
+    return new Promise((resolve) => {
+        dns.resolve4(hostname, (err, addresses) => {
+            if (err || !addresses || addresses.length === 0) {
+                console.log(`Failed to resolve ${hostname} to IPv4, using original hostname`);
+                resolve(hostname);
+            } else {
+                console.log(`Resolved ${hostname} to IPv4: ${addresses[0]}`);
+                resolve(addresses[0]);
+            }
+        });
+    });
+};
+
+// Parse connection string and replace hostname with IPv4
+const parseAndResolveConnectionString = async (connectionString) => {
+    try {
+        const url = new URL(connectionString);
+        const originalHost = url.hostname;
+
+        console.log(`Original hostname: ${originalHost}`);
+
+        // Resolve to IPv4
+        const ipv4Host = await resolveToIPv4(originalHost);
+
+        // Replace hostname with IPv4 address
+        url.hostname = ipv4Host;
+
+        const newConnectionString = url.toString();
+        console.log(`Modified connection string: ${newConnectionString.replace(/:([^:@]+)@/, ':***@')}`);
+
+        return newConnectionString;
+    } catch (error) {
+        console.log('Failed to parse connection string, using original:', error.message);
+        return connectionString;
+    }
+};
+
+let sequelizeInstance = null;
 
 const connectDB = async () => {
+    // Return existing instance if already connected
+    if (sequelizeInstance) {
+        try {
+            await sequelizeInstance.authenticate();
+            console.log('✅ Using existing connection');
+            return sequelizeInstance;
+        } catch (error) {
+            console.log('Existing connection failed, creating new one');
+            sequelizeInstance = null;
+        }
+    }
+
     try {
-        console.log('=== Supavisor Connection ===');
+        console.log('=== Single Connection Approach ===');
 
-        // SỬ DỤNG TRANSACTION POOLER (IPv4 Compatible)
-        // Copy từ Supabase Dashboard như trong hình
-        const connectionString = process.env.TRANSACTION_POOLER_URL || process.env.DB_URL;
+        const originalConnectionString = process.env.TRANSACTION_POOLER_URL || process.env.DB_URL;
 
-        if (!connectionString) {
-            throw new Error('SUPAVISOR_URL or DB_URL is required');
+        if (!originalConnectionString) {
+            throw new Error('TRANSACTION_POOLER_URL or DB_URL is required');
         }
 
-        console.log('Using Transaction Pooler (IPv4 Compatible)');
-        console.log('Connection format: postgresql://postgres.xxx:***@aws-1-us-east-2.pooler.supabase.com:5432/postgres');
+        // Resolve hostname to IPv4
+        const resolvedConnectionString = await parseAndResolveConnectionString(originalConnectionString);
 
-        const sequelize = new Sequelize(connectionString, {
+        sequelizeInstance = new Sequelize(resolvedConnectionString, {
             dialect: 'postgres',
             logging: false, // Set to console.log for debugging
+
+            // DISABLE CONNECTION POOLING - Use single persistent connection
+            pool: {
+                max: 1,      // Only 1 connection
+                min: 1,      // Always keep 1 connection
+                acquire: 60000,
+                idle: 300000, // Keep connection alive for 5 minutes
+                evict: 10000,
+                handleDisconnects: true
+            },
+
             dialectOptions: {
                 ssl: {
                     require: true,
                     rejectUnauthorized: false
                 },
-                // Network settings for better compatibility
+                // Network configuration
                 keepAlive: true,
-                keepAliveInitialDelayMillis: 0,
+                keepAliveInitialDelayMillis: 10000,
                 connectTimeout: 30000,
                 socketTimeout: 30000,
-                // Try both IPv4 and IPv6, but prefer IPv4
-                family: 0, // 0 = auto, 4 = IPv4 only, 6 = IPv6 only
+                // Force IPv4 at socket level
+                family: 4,
             },
-            pool: {
-                max: 5,      // Reduced for connection pooler
-                min: 0,
-                acquire: 30000,
-                idle: 10000,
-                evict: 1000,
-                handleDisconnects: true
-            },
-            query: {
-                raw: true
-            },
-            timezone: '+07:00',
+
+            // Connection handling
             retry: {
                 match: [
                     /ETIMEDOUT/,
@@ -58,49 +111,83 @@ const connectDB = async () => {
                     /EPIPE/,
                     /EAI_AGAIN/,
                     /ENETUNREACH/,
-                    /SequelizeConnectionError/,
-                    /SequelizeConnectionRefusedError/,
-                    /SequelizeHostNotFoundError/,
-                    /SequelizeHostNotReachableError/,
-                    /SequelizeInvalidConnectionError/,
-                    /SequelizeConnectionTimedOutError/
+                    /SequelizeConnectionError/
                 ],
-                max: 3
+                max: 2 // Reduced retry attempts
+            },
+
+            query: {
+                raw: true
+            },
+            timezone: '+07:00',
+
+            // Important: Define connection handling
+            define: {
+                freezeTableName: true,
+                timestamps: true
             }
         });
 
-        console.log('Testing Supavisor connection...');
-        await sequelize.authenticate();
-        console.log('✅ Connected via Supavisor successfully!');
+        console.log('Testing single connection...');
+        await sequelizeInstance.authenticate();
+        console.log('✅ Single connection established successfully!');
 
-        // Test query
-        const [results] = await sequelize.query('SELECT NOW() as current_time, version() as pg_version');
+        // Test with a simple query
+        const [results] = await sequelizeInstance.query('SELECT NOW() as current_time, current_database() as db_name');
         console.log('📅 Database time:', results[0].current_time);
-        console.log('🐘 PostgreSQL version:', results[0].pg_version.split(' ')[0]);
+        console.log('🏛️  Database name:', results[0].db_name);
 
-        global.sequelize = sequelize;
-        return sequelize;
+        // Set up connection event handlers
+        sequelizeInstance.connectionManager.on('connect', () => {
+            console.log('🔗 Database connection established');
+        });
+
+        sequelizeInstance.connectionManager.on('disconnect', () => {
+            console.log('🔌 Database connection lost');
+        });
+
+        global.sequelize = sequelizeInstance;
+        return sequelizeInstance;
 
     } catch (error) {
-        console.error('❌ Supavisor connection failed:');
+        console.error('❌ Single connection failed:');
         console.error('Error:', error.message);
         console.error('Code:', error.code);
 
+        // Reset instance on failure
+        sequelizeInstance = null;
+
         if (error.code === 'ENETUNREACH') {
-            console.error('🔧 Still IPv6 issue. Try these:');
-            console.error('   1. Get Supavisor URL from Dashboard');
-            console.error('   2. Enable IPv4 add-on ($4/month)');
+            console.error('🔧 IPv6 issue persists. Next steps:');
+            console.error('   1. Contact Render support about IPv6 routing');
+            console.error('   2. Try Supabase IPv4 add-on ($4/month)');
             console.error('   3. Use Supabase client library instead');
         }
 
-        // Retry logic for production
-        if (process.env.NODE_ENV === 'production') {
-            console.log('🔄 Retrying in 15 seconds...');
-            setTimeout(connectDB, 15000);
-        } else {
+        // Don't retry in production to avoid infinite loops
+        if (process.env.NODE_ENV !== 'production') {
             throw error;
+        } else {
+            console.log('Production mode: not retrying to avoid loops');
+            return null;
         }
     }
 };
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    if (sequelizeInstance) {
+        console.log('Closing database connection...');
+        await sequelizeInstance.close();
+    }
+});
+
+process.on('SIGINT', async () => {
+    if (sequelizeInstance) {
+        console.log('Closing database connection...');
+        await sequelizeInstance.close();
+    }
+    process.exit(0);
+});
 
 module.exports = connectDB;
