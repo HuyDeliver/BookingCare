@@ -1,9 +1,13 @@
-import doctorService from '../services/doctorServices'
+const {
+    getAllDoctorService, getTopDoctorServices, saveInforDoctorService, getDetailDoctorService,
+    postDoctorScheduleService, getDoctorScheduleService, getDoctorBookingInforService,
+    getProfileDoctorService, getListPatientBookingServices, postSendRedemyServices
+} = require('../services/doctorServices')
 
 const getTopDoctorHome = async (req, res) => {
     let limit = req.query.limit ? req.query.limit : 10
     try {
-        let resonse = await doctorService.getTopDoctorServices(+limit)
+        let resonse = await getTopDoctorServices(+limit)
         return res.status(200).json(resonse)
     } catch (error) {
         console.log(error)
@@ -16,7 +20,7 @@ const getTopDoctorHome = async (req, res) => {
 
 const getAllDoctors = async (req, res) => {
     try {
-        let doctor = await doctorService.getAllDoctorService()
+        let doctor = await getAllDoctorService()
         return res.status(200).json(doctor)
     } catch (error) {
         console.log(error)
@@ -28,7 +32,7 @@ const getAllDoctors = async (req, res) => {
 }
 const postInforDoctor = async (req, res) => {
     try {
-        let response = await doctorService.saveInforDoctorService(req.body)
+        let response = await saveInforDoctorService(req.body)
         return res.status(200).json(response)
     } catch (error) {
         console.log(error)
@@ -41,7 +45,7 @@ const postInforDoctor = async (req, res) => {
 
 const getDetailDoctor = async (req, res) => {
     try {
-        let info = await doctorService.getDetailDoctorService(req.query.id)
+        let info = await getDetailDoctorService(req.query.id)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -54,7 +58,7 @@ const getDetailDoctor = async (req, res) => {
 
 const postDoctorSchedule = async (req, res) => {
     try {
-        let info = await doctorService.postDoctorScheduleService(req.body)
+        let info = await postDoctorScheduleService(req.body)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -67,7 +71,7 @@ const postDoctorSchedule = async (req, res) => {
 const getDoctorSchedule = async (req, res) => {
     try {
         const { doctorID, date } = req.query
-        let info = await doctorService.getDoctorScheduleService(doctorID, date)
+        let info = await getDoctorScheduleService(doctorID, date)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -79,7 +83,7 @@ const getDoctorSchedule = async (req, res) => {
 }
 const getDoctorBookingInfor = async (req, res) => {
     try {
-        let info = await doctorService.getDoctorBookingInforService(req.query.doctorID)
+        let info = await getDoctorBookingInforService(req.query.doctorID)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -91,7 +95,7 @@ const getDoctorBookingInfor = async (req, res) => {
 }
 const getProfileDoctor = async (req, res) => {
     try {
-        let info = await doctorService.getProfileDoctorService(req.query.doctorID)
+        let info = await getProfileDoctorService(req.query.doctorID)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -105,7 +109,7 @@ const getProfileDoctor = async (req, res) => {
 const getListPatientBooking = async (req, res) => {
     try {
         const { doctorID, date } = req.query
-        let info = await doctorService.getListPatientBookingServices(doctorID, date)
+        let info = await getListPatientBookingServices(doctorID, date)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -118,7 +122,7 @@ const getListPatientBooking = async (req, res) => {
 
 const postSendRedemy = async (req, res) => {
     try {
-        let info = await doctorService.postSendRedemyServices(req.body)
+        let info = await postSendRedemyServices(req.body)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)

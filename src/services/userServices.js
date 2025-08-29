@@ -1,5 +1,5 @@
-import { raw } from "body-parser";
-import db from "../models";
+;
+const db = require('../models/index')
 import Bcrypt from "bcrypt";
 
 const salt = Bcrypt.genSaltSync(10);

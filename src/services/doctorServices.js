@@ -1,4 +1,4 @@
-import db from "../models"
+const db = require('../models/index')
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 import _, { includes } from "lodash"
@@ -284,10 +284,6 @@ const getDoctorScheduleService = async (doctorID, date) => {
             attributes: ['timeType', 'statusID', 'patientID'],
             raw: false
         })
-
-        let bookingStatus = bookingInfor.map(item => item.statusID)
-        let bookingPatient = bookingInfor.map(item => item.patientID)
-        emitter.emit('ONE_TIME_BOOKING', bookingStatus, bookingPatient)
 
         let bookingSlot = bookingInfor.map(item => item.timeType)
 

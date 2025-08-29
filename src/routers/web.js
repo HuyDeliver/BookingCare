@@ -1,11 +1,11 @@
-import express from "express"
-import { getHomePage, getCRUDPage, PostCRUDPage, displayCRUDPage, getUpdatePage, postUpdatePage, getDeletePage } from "../controllers/homeController.js"
-import userController from "../controllers/userController.js"
-import docterController from "../controllers/doctorController.js"
-import patientController from '../controllers/patientController.js'
-import { createNewSpecialty, getAllSpecialty, getDetailSpecialty, postDetailSpecialty } from "../controllers/specialtyController.js"
-import { createNewClinic, getAllClinic, getDetailClinic, postDetailClinic } from "../controllers/clinicController.js"
-import { searchBar } from "../controllers/searchController.js"
+const express = require("express")
+const { getHomePage, getCRUDPage, PostCRUDPage, displayCRUDPage, getUpdatePage, postUpdatePage, getDeletePage } = require("../controllers/homeController.js")
+const userController = require("../controllers/userController.js")
+const docterController = require("../controllers/doctorController.js")
+const patientController = require('../controllers/patientController.js')
+const { createNewSpecialty, getAllSpecialty, getDetailSpecialty, postDetailSpecialty } = require("../controllers/specialtyController.js")
+const { createNewClinic, getAllClinic, getDetailClinic, postDetailClinic } = require("../controllers/clinicController.js")
+const { searchBar } = require("../controllers/searchController.js")
 const router = express.Router()
 
 router.get('/', getHomePage)

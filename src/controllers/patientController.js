@@ -1,7 +1,7 @@
-import patientServices from '../services/patientServices'
+const { postBookingAppointmentService, postVerifyBookingAppointmentService } = require('../services/patientServices')
 const postBookingAppointment = async (req, res) => {
     try {
-        let info = await patientServices.postBookingAppointmentService(req.body)
+        let info = await postBookingAppointmentService(req.body)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)
@@ -13,7 +13,7 @@ const postBookingAppointment = async (req, res) => {
 }
 const postVerifyBookingAppointment = async (req, res) => {
     try {
-        let info = await patientServices.postVerifyBookingAppointmentService(req.body)
+        let info = await postVerifyBookingAppointmentService(req.body)
         return res.status(200).json(info)
     } catch (error) {
         console.log(error)

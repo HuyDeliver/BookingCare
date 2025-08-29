@@ -1,5 +1,5 @@
-import db from "../models/index.js"
-import { createNewUser, getAllUser, getOneUser, updateUser, deleteUser } from "../services/CRUD-services.js"
+const db = require('../models/index')
+const { createNewUser, getAllUser, getOneUser, updateUser, deleteUser } = require("../services/CRUD-services.js")
 const getHomePage = async (req, res) => {
     try {
         let data = await db.User.findAll()

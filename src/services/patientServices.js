@@ -1,5 +1,5 @@
 import { where } from "sequelize"
-import db from "../models"
+const db = require('../models/index')
 require('dotenv').config()
 import EventEmitter from 'events'
 import { emitter } from "../utils/emitter"

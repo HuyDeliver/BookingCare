@@ -1,4 +1,4 @@
-import userServices from "../services/userServices.js"
+const userServices = require("../services/userServices.js")
 module.exports = {
     handleLogin: async (req, res) => {
         let { email, password } = req.body
