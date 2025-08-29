@@ -3,10 +3,7 @@ import configViewEngine from "./config/viewEngine.js"
 import router from "./routers/web.js"
 import connectTest from "./config/connectDB.js"
 import cors from "cors"
-const compression = require('compression');
-
-const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first');
+import compression from 'compression';
 
 require("dotenv").config()
 const port = process.env.PORT || 6969
@@ -41,7 +38,19 @@ app.use(router)
         await connectTest();
     })();
 
+app.use((req, res) => {
+    if (!res.headersSent) {
+        res.status(404).send('Not Found');
+    }
+});
 
+// Middleware xử lý lỗi
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    if (!res.headersSent) {
+        res.status(500).send('Internal Server Error');
+    }
+});
 app.listen(port, () => {
     console.log("backend nodejs is running on the port " + port)
 })
