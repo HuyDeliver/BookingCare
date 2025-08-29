@@ -5,6 +5,9 @@ import connectTest from "./config/connectDB.js"
 import cors from "cors"
 const compression = require('compression');
 
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 require("dotenv").config()
 const port = process.env.PORT || 6969
 
