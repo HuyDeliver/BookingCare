@@ -36,7 +36,10 @@ app.use((req, res, next) => {
 
 configViewEngine(app)
 app.use(router)
-connectTest()
+
+    (async () => {
+        await connectTest();
+    })();
 
 
 app.listen(port, () => {
