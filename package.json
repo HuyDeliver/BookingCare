@@ -1,11 +1,13 @@
 {
+  "type": "commonjs",
   "name": "nodejs",
   "version": "1.0.0",
   "description": "backend nodejs",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec babel-node src/server.js"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
   },
   "keywords": [
     "fullstack",
@@ -13,28 +15,31 @@
   ],
   "author": "HuyDeliver",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
-    "bcrypt": "5.0.1",
-    "body-parser": "1.19.0",
-    "compression": "^1.8.1",
-    "cors": "2.8.5",
-    "dotenv": "8.2.0",
-    "ejs": "3.1.5",
-    "express": "4.17.1",
-    "lodash": "4.17.21",
-    "mysql2": "2.3.3",
-    "nodemailer": "6.6.3",
-    "pg": "^8.16.3",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "lodash": "^4.17.21",
+    "mysql2": "^3.11.0",
+    "nodemailer": "^6.9.14",
+    "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "6.37.5",
-    "sharp": "0.30.7",
-    "uuid": "8.3.2"
+    "sequelize": "^6.37.5",
+    "sharp": "^0.33.4",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@babel/core": "7.12.10",
-    "@babel/node": "7.12.10",
-    "@babel/preset-env": "7.12.10",
-    "nodemon": "2.0.7",
-    "sequelize-cli": "6.2.0"
+    "@babel/core": "^7.24.7",
+    "@babel/node": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "nodemon": "^3.1.4",
+    "sequelize-cli": "^6.6.2"
   }
 }
