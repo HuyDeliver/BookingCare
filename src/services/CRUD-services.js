@@ -1,6 +1,7 @@
-
-const db = require('../models/index.js')
-const Bcrypt = require('bcrypt')
+import { raw } from 'body-parser';
+import db from '../models/index.js';
+import Bcrypt from 'bcrypt';
+import { where } from 'sequelize';
 
 const salt = Bcrypt.genSaltSync(10);
 

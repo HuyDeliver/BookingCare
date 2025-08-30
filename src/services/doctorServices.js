@@ -1,8 +1,9 @@
 const db = require('../models/index')
 require('dotenv').config()
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
-const _ = require('lodash');
-const { sendAttackment } = require("./emailService")
+import _, { includes } from "lodash"
+import { emitter } from "../utils/emitter"
+import { sendAttackment } from "./emailService"
 
 const getTopDoctorServices = async (limitInput) => {
     try {
@@ -31,12 +32,6 @@ const getTopDoctorServices = async (limitInput) => {
             raw: true,
             nest: true
         })
-        if (user && user.length) {
-            user.map((item) => {
-                item.image = Buffer.from(item.image, 'base64').toString('binary')
-                return item
-            })
-        }
         return {
             errCode: 0,
             errMessage: 'get top doctor success',
