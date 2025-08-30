@@ -6,7 +6,7 @@ const { v4 } = require('uuid')
 const uuidv4 = v4
 const buildUrlEmail = (doctorID, token) => {
     let result = ''
-    result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorID=${doctorID}}`
+    result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorID=${doctorID}`
     return result
 }
 
@@ -41,6 +41,7 @@ const postBookingAppointmentService = async (data) => {
                         date: { [db.Sequelize.Op.gte]: new Date() }
                     }
                 })
+                console.log('dã có lịch hẹn !!!!', existingBooking)
                 if (existingBooking) {
                     return {
                         errCode: 2,
