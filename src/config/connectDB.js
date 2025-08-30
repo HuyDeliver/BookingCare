@@ -6,10 +6,10 @@ async function getOptimalHost() {
     try {
         // Thử resolve IPv4 trước
         const addresses = await dns.resolve4(process.env.DB_HOST);
-        console.log('✅ DNS resolved successfully:', addresses[0]);
+        console.log('DNS resolved successfully:', addresses[0]);
         return addresses[0];
     } catch (error) {
-        console.warn('⚠️ DNS resolution failed, using original hostname:', error.message);
+        console.warn('DNS resolution failed, using original hostname:', error.message);
         // Fallback về hostname gốc
         return process.env.DB_HOST;
     }
@@ -41,7 +41,6 @@ async function connectDB() {
                     acquire: 60000,
                     idle: 10000,
                 },
-                // Thêm retry logic
                 retry: {
                     match: [
                         /ETIMEDOUT/,
@@ -57,11 +56,11 @@ async function connectDB() {
         );
 
         await sequelize.authenticate();
-        console.log('✅ Database connection established successfully via:', host);
+        console.log('Database connection established successfully via:', host);
         return sequelize;
     } catch (error) {
-        console.error('❌ Unable to connect to the database:', error.message);
-        throw error; // Re-throw để app có thể xử lý
+        console.error('Unable to connect to the database:', error.message);
+        throw error;
     }
 }
 

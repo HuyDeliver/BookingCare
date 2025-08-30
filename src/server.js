@@ -31,10 +31,9 @@ app.use(router);
 async function initializeDatabase() {
     try {
         await connectTest();
-        console.log('🚀 Database initialized successfully');
+        console.log('Database initialized successfully');
     } catch (error) {
-        console.error('💥 Failed to initialize database:', error.message);
-        // Có thể thêm logic retry hoặc graceful degradation
+        console.error('Failed to initialize database:', error.message);
         process.exit(1); // Hoặc xử lý khác tùy yêu cầu
     }
 }
@@ -57,5 +56,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-    console.log(`🌟 Backend nodejs is running on port ${port}`);
+    console.log(`Backend nodejs is running on port ${port}`);
 });

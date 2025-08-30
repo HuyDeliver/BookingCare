@@ -1,6 +1,6 @@
 ;
 const db = require('../models/index')
-import Bcrypt from "bcrypt";
+const Bcrypt = require('bcrypt')
 
 const salt = Bcrypt.genSaltSync(10);
 

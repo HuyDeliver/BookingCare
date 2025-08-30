@@ -1,10 +1,9 @@
-import { where } from "sequelize"
+
 const db = require('../models/index')
 require('dotenv').config()
-import EventEmitter from 'events'
-import { emitter } from "../utils/emitter"
-import { sendSimpleEmail } from "./emailService"
-import { v4 as uuidv4 } from "uuid"
+const { sendSimpleEmail } = require("./emailService")
+const { v4 } = require('uuid')
+const uuidv4 = v4
 const buildUrlEmail = (doctorID, token) => {
     let result = ''
     result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorID=${doctorID}}`
