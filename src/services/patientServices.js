@@ -23,7 +23,7 @@ const postBookingAppointmentService = async (data) => {
             let token = uuidv4()
             let user = await db.User.findOrCreate({
                 where: { email: data.email },
-                default: {
+                defaults: {
                     firstName: data.firstName,
                     lastname: data.lastName,
                     email: data.email,
@@ -38,10 +38,9 @@ const postBookingAppointmentService = async (data) => {
                     where: {
                         patientID: user[0].id,
                         statusID: { [db.Sequelize.Op.ne]: 'S3' },
-                        date: { [db.Sequelize.Op.gte]: new Date() }
+                        date: date.dateBooking
                     }
                 })
-                console.log('dã có lịch hẹn !!!!', existingBooking)
                 if (existingBooking) {
                     return {
                         errCode: 2,
