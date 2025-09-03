@@ -1,6 +1,7 @@
 const { postBookingAppointmentService, postVerifyBookingAppointmentService } = require('../services/patientServices')
 const postBookingAppointment = async (req, res) => {
     try {
+        console.log(req.body)
         let info = await postBookingAppointmentService(req.body)
         return res.status(200).json(info)
     } catch (error) {

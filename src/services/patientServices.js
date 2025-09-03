@@ -38,7 +38,7 @@ const postBookingAppointmentService = async (data) => {
                     where: {
                         patientID: user[0].id,
                         statusID: { [db.Sequelize.Op.ne]: 'S3' },
-                        date: date.dateBooking
+                        date: data.dateBooking
                     }
                 })
                 if (existingBooking) {
